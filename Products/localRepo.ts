@@ -29,7 +29,7 @@ export class LocalRespo implements IProductsRepo {
         }
     }
    
-        addQuantity(retrievedProducts: IProduct[], order: IOrder, selectedProducts: ISelectedProduct[]): void {
+    addQuantity(retrievedProducts: IProduct[], order: IOrder, selectedProducts: ISelectedProduct[]): void {
             selectedProducts.forEach(selectedProduct => {
                 const retrievedProduct = retrievedProducts.find(product => product.id === selectedProduct.id);
                 if (retrievedProduct) {
@@ -41,5 +41,7 @@ export class LocalRespo implements IProductsRepo {
                 }
             });
         }
+
+        
     
 }
