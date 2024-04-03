@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "name": "ball",
+        "price": 25,
+        "category": 2,
+        "description": "a very nice futbol ball"
+    },
+    {
+        "id": 2,
+        "name": "jersey",
+        "price": 50,
+        "category": 2,
+        "description": "a very nice futbol jersey"
+    }
+]
