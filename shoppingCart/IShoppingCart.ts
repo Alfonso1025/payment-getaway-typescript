@@ -6,5 +6,6 @@ export interface IShopCartItem{
 }
 export interface IShoppingCart{
    shoppoingCartItems: IShopCartItem[]
+   setShopItems(arrayOfShoppItemObjects: IShopCartItem[]): void
    
 }

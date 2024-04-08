@@ -1,4 +1,5 @@
-import { IProduct } from "../Products/IProduct"
+
+import { IShoppingCart } from "../shoppingCart/IShoppingCart"
 export interface IPaymentService{
-    createUrl(paymentMethods: string[], products: IProduct): string
+    createUrl(paymentMethods: string[], shoppingCart: IShoppingCart): Promise<string>
 }

@@ -6,6 +6,6 @@ import { checkoutController } from './dependencies';
 
 export const checkOutRouter = Router();
 
-checkOutRouter.post("/create-session",checkoutController.getBulkProductsById.bind(checkoutController));
+checkOutRouter.post("/create-session",checkoutController.createSession.bind(checkoutController));
 
 

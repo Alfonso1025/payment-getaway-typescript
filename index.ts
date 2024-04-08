@@ -1,4 +1,7 @@
-// app.ts
+// index.js
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response } from 'express';
 import {checkOutRouter} from './checkout/checkoutRoutes';
 

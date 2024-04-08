@@ -1,16 +1,22 @@
 import { Request, Response } from "express";
-import { IProductsRepo } from "../Products/IProductsRepo";
-import { IProduct } from "../Products/IProduct";
-import { ISelectedProduct } from "../Products/ISelectedProduct";
+import { IShoppingCart } from "../shoppingCart/IShoppingCart";
+import { IPaymentService } from "../payment/IPaymentService";
+
 
 export class CheckoutController{
-    constructor(private readonly productRepo : IProductsRepo){}
+    constructor(private readonly shoppingCart:IShoppingCart, private readonly paymentService: IPaymentService ){}
 
-    async getBulkProductsById(req:Request, res: Response){
-        const productsArray: ISelectedProduct[] = req.body.selectedProducts
-        const products = await this.productRepo.getBulkProductsById(productsArray)
-
-        return res.json({data: products})
+    async createSession(req:Request, res: Response) : Promise<void>{
+        try {
+            this.shoppingCart.setShopItems(req.body.shoppingCart)
+            const url = await this.paymentService.createUrl(['aud'], this.shoppingCart)
+            res.send({url}) 
+        } catch (error) {
+            
+            if(error instanceof Error)
+            res.send(error.message)
+        }
+       
     }
 
 

@@ -1,5 +1,7 @@
 import { CheckoutController } from "./checkoutController";
-import { LocalRespo } from "../Products/localRepo";
+import { ShoppingCart } from "../shoppingCart/shoppingcart";
+import { StripeService } from "../payment/stripeService";
 
-const localRepo = new LocalRespo()
-export const checkoutController = new CheckoutController(localRepo)
+const shoppingCart = new ShoppingCart()
+const stripeService = new StripeService()
+export const checkoutController = new CheckoutController(shoppingCart, stripeService)
