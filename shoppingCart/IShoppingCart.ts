@@ -1,4 +1,4 @@
-import { IProduct } from "../Products/IProduct"
+import { IProduct } from "../Products/types"
 
 export interface IShopCartItem{
     product : IProduct
