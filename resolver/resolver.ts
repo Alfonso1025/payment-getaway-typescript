@@ -3,16 +3,18 @@ import { IResolver } from "./IResolver"
 
 
 export class Resolver implements IResolver{
-    private res!: Response
+    private response!: Response
     constructor() {}
     setResponse(res:Response):void{
-        this.res = res
+        this.response = res
+        console.log('the response has been set in the resolver')
     }
     private sendResponse(statusCode: number, data: any, message: string): void {
-        if (!this.res) {
+        
+        if (!this.response) {
             throw new Error("Response object not set.");
         }
-        this.res.status(statusCode).send({ data, message, code: statusCode });
+        this.response.status(statusCode).send({ data, message, code: statusCode });
     }
 
     success(data: any, message: string): void {

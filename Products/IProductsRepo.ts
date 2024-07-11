@@ -1,10 +1,10 @@
 import { Product,insertedId } from "./types"
-import { imageKey } from "./imageService/types"
+import { ResponseObject } from "../queryResponse/types"
 
 
 export interface IProductsRepo{
 
-   getAllProducts():  Promise<Product[]>
+   getAllProducts():  Promise<ResponseObject>
    addProduct(product:Product): Promise<insertedId>
    addQuantity(qty:number,productId:number):Promise<string>
    reduceQuantity(qty:number, producId: number) :Promise<string>

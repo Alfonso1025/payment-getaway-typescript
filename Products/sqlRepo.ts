@@ -5,11 +5,16 @@ import db from "../dbconnections/sql/sql";
 import { QueryError } from "../dbconnections/errors";
 import {ResultSetHeader } from 'mysql2';
 import { error } from "console";
-
+import { ResponseObject } from "../queryResponse/types";
 
 
 export class SqlProductsRepo implements IProductsRepo{
-    getAllProducts(): Promise < Product[] > {
+    constructor(
+        private responseObject : ResponseObject,
+    
+    ){}
+
+    getAllProducts(): Promise < ResponseObject > {
 
         const query = 
             `SELECT 
@@ -42,8 +47,10 @@ export class SqlProductsRepo implements IProductsRepo{
                 if(error){
                     reject(new QueryError(error.message))
                 }
+                this.responseObject.data = result
+                this.responseObject.message = 'success'
                 
-                resolve(result as Product[])
+                resolve(this.responseObject)
             })
         })
         

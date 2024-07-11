@@ -4,11 +4,15 @@ import { Product, ProductImage } from "./types";
 import { DbConnectionError, QueryError } from "../dbconnections/errors";
 import { IImageService } from "./imageService/IImageService";
 import { ImgServiceConnectionErr } from "./imageService/errors";
+import { ResponseObject } from "../queryResponse/types";
+import { IResolver } from "../resolver/IResolver";
 
 export class ProductsController{
     constructor(
         private productsRepo : IProductsRepo,
-        private imageService : IImageService
+        private imageService : IImageService,
+        private resolver : IResolver
+        
     ){}
     /*  
         retrieveImages is a helper method used by getAllProducts() to fetch all images
@@ -58,13 +62,14 @@ export class ProductsController{
     }
     
     async getAllProducts(req:Request, res: Response){
+        this.resolver.setResponse(res)
         try {
-            const products: Product[] = await this.productsRepo.getAllProducts()
-            
+            const result: ResponseObject = await this.productsRepo.getAllProducts()
+            const products = result.data
             const productsWithImages = await this.retrieveImages(products)
             console.log(productsWithImages)
-          
-            res.status(200).send(productsWithImages)
+            this.resolver.success(productsWithImages, 'success')
+            //res.status(200).send(productsWithImages)
         } catch (error) {
             if(error instanceof DbConnectionError){
                 console.log('a db connection error ocurred: ', error.message)
