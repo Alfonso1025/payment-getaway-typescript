@@ -1,11 +1,11 @@
 import { IProductsRepo } from "./IProductsRepo";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { Product, ProductImage } from "./types";
 import { DbConnectionError, QueryError } from "../dbconnections/errors";
 import { IImageService } from "./imageService/IImageService";
 import { ImgServiceConnectionErr } from "./imageService/errors";
 import { ResponseObject } from "../queryResponse/types";
-import { IResolver } from "../resolver/IResolver";
+import { IResolver } from "../services/resolver/IResolver";
 
 export class ProductsController{
     constructor(
@@ -14,6 +14,11 @@ export class ProductsController{
         private resolver : IResolver
         
     ){}
+    async sendResponse( result: ResponseObject){
+        
+        if(result.message === 'success') return this.resolver.success(result.data, result.message)
+        else return this.resolver.notFound(null, result.message)
+    }
     /*  
         retrieveImages is a helper method used by getAllProducts() to fetch all images
         associated to a product from the cloud. The method returns a promise that
@@ -62,57 +67,77 @@ export class ProductsController{
     }
     
     async getAllProducts(req:Request, res: Response){
+
         this.resolver.setResponse(res)
         try {
-            const result: ResponseObject = await this.productsRepo.getAllProducts()
-            const products = result.data
+            const result: ResponseObject = await this.productsRepo.getAll()
+            const products = result.data 
+            
+            if(products === null){
+                console.log('products is null')
+                this.sendResponse(result)
+                return
+            }
+
             const productsWithImages = await this.retrieveImages(products)
-            console.log(productsWithImages)
-            this.resolver.success(productsWithImages, 'success')
-            //res.status(200).send(productsWithImages)
+            result.data = productsWithImages
+            
+            this.sendResponse(result)
+            
+
+            
         } catch (error) {
             if(error instanceof DbConnectionError){
                 console.log('a db connection error ocurred: ', error.message)
             }
-            res.status(500).send('internal server error')
+            else if(error instanceof QueryError){
+                console.log('error excuting the db query: '), error.message
+            }
+            this.resolver.internalServerError(error, 'internal server error')
+            
         }
        
     }
     async addProduct(req:Request, res: Response){
+
         const product : Product = req.body
+        this.resolver.setResponse(res)
         
-        console.log(product)
         try {
-            const result = await this.productsRepo.addProduct(product)
-            if(result && typeof result === 'number' ){
-                console.log('this is the result : ', result)
-                res.status(200).send('new product inserted')
-            }
-            else{
-                res.status(500).send('an error occured while inserting the new product')
-            }
+            const result:ResponseObject = await this.productsRepo.post(product)
+            this.sendResponse(result)
+            
+           
         } catch (error) {
             if(error instanceof DbConnectionError){
-                console.log('a db error ocurred', error.message)
-                res.status(500).send('internal server error')
+                console.log('an error occurred while connecting to the db', error.message)
+                return res.status(500).send('internal server error')
             }
+            if(error instanceof QueryError){
+                console.log('a query sintax error ocurred', error.message)
+                return this.resolver.internalServerError(null, error.message)
+            }
+
         }
         
        
     }
     async addQuantity(req:Request,res:Response){
+        this.resolver.setResponse(res)
         const qty : number = req.body.qty
         const productId : number = req.body.productId
         try {
             const result = await this.productsRepo.addQuantity(qty,productId)
-            console.log('this is the result: ', result)
-            if(result === 'successful_update') return res.status(200).send('succesful update')
-            else if(result === 'update_failed') return res.status(400).send('the update failed. Mkake sure to send a valid productId')
+            this.sendResponse(result)
             
         } catch (error) {
             if(error instanceof DbConnectionError){
                 console.log('a dbconnection error occurred', error.message)
-                res.status(500).send('internal server error')
+                return res.status(500).send('internal server error')
+            }
+            if(error instanceof QueryError){
+                console.log('a query sintax error ocurred', error.message)
+                return this.resolver.internalServerError(null, error.message)
             }
         }
         
@@ -123,14 +148,18 @@ export class ProductsController{
         const productId : number = req.body.productId
         try {
             const result = await this.productsRepo.reduceQuantity(qty,productId)
-            console.log('this is the result: ', result)
-            if(result === 'successful_update') return res.status(200).send('succesful update')
-            else if(result === 'update_failed') return res.status(400).send('the update failed. Mkake sure to send a valid productId')
+            this.sendResponse(result)
+            
+            
             
         } catch (error) {
             if(error instanceof DbConnectionError){
                 console.log('a dbconnection error occurred', error.message)
-                res.status(500).send('internal server error')
+                return res.status(500).send('internal server error')
+            }
+            if(error instanceof QueryError){
+                console.log('a query sintax error ocurred', error.message)
+                return this.resolver.internalServerError(null, error.message)
             }
         }
        
@@ -141,14 +170,16 @@ export class ProductsController{
         const productId : number = req.body.productId
         try {
             const result = await this.productsRepo.editPrice(productId,newPrice)
-            
-            if(result === 'successful_update') return res.status(200).send('succesful update')
-            else if(result === 'update_failed') return res.status(400).send('the update failed. Mkake sure to send a valid productId')
+            this.sendResponse(result)
             
         } catch (error) {
             if(error instanceof QueryError){
                 console.log('a dbconnection error occurred', error.message)
                 res.status(500).send('internal server error')
+            }
+            if(error instanceof QueryError){
+                console.log('a query sintax error ocurred', error.message)
+                return this.resolver.internalServerError(null, error.message)
             }
         }
 
@@ -159,14 +190,15 @@ export class ProductsController{
         const productId : number = req.body.productId
         try {
             const result = await this.productsRepo.editDescription(productId,newDescript)
-            
-            if(result === 'successful_update') return res.status(200).send('succesful update')
-            else if(result === 'update_failed') return res.status(400).send('the update failed. Make sure to send a valid productId')
-            
+            this.sendResponse(result)
         } catch (error) {
             if(error instanceof DbConnectionError){
                 console.log('a dbconnection error occurred', error.message)
-                res.status(500).send('internal server error')
+                return res.status(500).send('internal server error')
+            }
+            if(error instanceof QueryError){
+                console.log('a query sintax error ocurred', error.message)
+                return this.resolver.internalServerError(null, error.message)
             }
         }
 
@@ -183,16 +215,12 @@ export class ProductsController{
         try {
           
             const result = await this.imageService.uploadImage(file.path, imgName)
-            if(result === 'failed_uploading_image') return res.status(500).send('failed uploading')
+            
             if(result === 'image_uploaded_succesfuly'){
-                const resultQuery = await this.productsRepo.addImage(prodId, imgName)
-                console.log('this is the result query',resultQuery)
-                if(resultQuery && typeof resultQuery === 'number' ){ 
-                    return res.status(200).send('new product inserted')
-                }
-                
-                
+                const resultQuery: ResponseObject = await this.productsRepo.addImage(prodId, imgName)
+                return this.sendResponse(resultQuery)
             }
+            this.resolver.internalServerError(null, 'failed_uploading_to_the_cloud')
             
             
         } catch (error) {
@@ -200,23 +228,24 @@ export class ProductsController{
                 console.log('a db error ocurred', error.message)
                 return res.status(500).send('internal server error')
             }
-            console.log(error)
+            if(error instanceof QueryError){
+                console.log('a query sintax error ocurred', error.message)
+                return this.resolver.internalServerError(null, error.message)
+            }
         }    
        
     }
    async  setMainImage(req: Request, res: Response){
         try {
-            const selectResult: string = await this.productsRepo.selectMainImage(3,null)
-            if(selectResult === 'success_updating_main_image') return res.status(200).send(selectResult)
-            return res.status(404).send(selectResult)
+            const result: ResponseObject = await this.productsRepo.selectMainImage(3,null)
+            this.sendResponse(result)
         } catch (error) {
             if(error instanceof DbConnectionError){
                 console.log('a dbconnection error occurred', error.message)
                 res.status(500).send('internal server error')
             }
-            else{
-                console.log(error)
-            }
+            
+            
         }
         
     }

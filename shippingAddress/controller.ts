@@ -2,7 +2,10 @@ import { IShippAddrRepo } from "./Repos/IShippAddrRepo";
 import { Request,Response } from "express";
 import { ShippingAddress } from "./types";
 import { DbConnectionError, QueryError } from "../dbconnections/errors";
-import { IResolver } from "../resolver/IResolver";
+import { IResolver } from "../services/resolver/IResolver";
+import { QueryResult } from "mysql2";
+import { ResponseObject } from "../queryResponse/types";
+
 export class Controller{
 
     private shippAddrRepo: IShippAddrRepo;
@@ -12,10 +15,10 @@ export class Controller{
         this.shippAddrRepo = shippAddrRepo;
         this.resolver = resolver
     }
-    async query(res:Response, result: string){
+    async query(res:Response, result: ResponseObject){
         console.log('code got to general')
-        if(result === 'success') return this.resolver.success(null, result)
-        else return this.resolver.internalServerError(null, result)
+        if(result.message === 'success') return this.resolver.success(null, result.message)
+        else return this.resolver.notFound(null, result.message)
     }
     //post a new shipping address
     async post(req: Request, res: Response){

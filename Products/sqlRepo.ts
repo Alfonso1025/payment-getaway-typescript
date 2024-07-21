@@ -3,19 +3,21 @@ import { Product,insertedId } from "./types";
 import { imageKey } from "./imageService/types";
 import db from "../dbconnections/sql/sql";
 import { QueryError } from "../dbconnections/errors";
-import {ResultSetHeader } from 'mysql2';
+import {QueryResult, ResultSetHeader } from 'mysql2';
 import { error } from "console";
 import { ResponseObject } from "../queryResponse/types";
+import { ICheckQryResult } from "../services/CheckQueryResult/ICheckQryResult";
 
 
 export class SqlProductsRepo implements IProductsRepo{
     constructor(
         private responseObject : ResponseObject,
+        private checkQryResult : ICheckQryResult<QueryResult | ResultSetHeader>
     
     ){}
 
-    getAllProducts(): Promise < ResponseObject > {
-
+    getAll(): Promise < ResponseObject > {
+        const testquery = 'select * from products where product_id = 50'
         const query = 
             `SELECT 
                 p.product_id,
@@ -43,41 +45,59 @@ export class SqlProductsRepo implements IProductsRepo{
         ;
 
         return new Promise((resolve, reject)=>{
-            db.query(query, (error, result)=>{
+            db.query(testquery, (error, result)=>{
                 if(error){
                     reject(new QueryError(error.message))
                 }
-                this.responseObject.data = result
-                this.responseObject.message = 'success'
+                
+                const isThereData = this.checkQryResult.isThereData(result)
+                if(!isThereData){
+                    this.responseObject.data = null
+                    this.responseObject.message = 'No products were found'
+                }
+                else if(isThereData){
+
+                    this.responseObject.data = result
+                    this.responseObject.message = 'success'
+                }
+                
                 
                 resolve(this.responseObject)
             })
         })
         
     }
-    addProduct(product: Product): Promise<insertedId> {
+    post(product: Product): Promise<ResponseObject> {
 
-        const query = 'INSERT INTO products (product_name, price, category, product_description, product_image, qty) VALUES (?, ?, ?, ?, ?,?)';
+        const query = 'INSERT INTO products (product_name, price, category, product_description, qty) VALUES (?,?,?,?,?)';
+        
         const values = [product.product_name, product.price, product.category,product.product_description,product.qty]
+        
         return new Promise((resolve, reject)=>{
             db.query(query,values, (error, result: ResultSetHeader)=>{
                 if(error){
-                    console.log(error.message)
+                    
                     reject(new QueryError(error.message))
                     
                 }
                 else if(result){
-                    console.log(result)
-                    resolve(result.insertId)
+                    if(this.checkQryResult.isThereInsertId(result)){
+                        this.responseObject.data = result.insertId
+                        this.responseObject.message = 'success'
+                    } 
+                    resolve(this.responseObject)
                 }
+                
+               
+            
             })
         })
         
     }
    
-    async addQuantity(qty: number, productId: number): Promise<string> {
+    async addQuantity(qty: number, productId: number): Promise<ResponseObject> {
 
-        const addQuery = 'UPDATE productss SET qty = qty + ? WHERE product_id = ?';
+        const addQuery = 'UPDATE products SET qty = qty + ? WHERE product_id =?';
         const values = [qty, productId]
         
         const result = await new  Promise<ResultSetHeader>((resolve, rejects)=>{
@@ -85,19 +105,25 @@ export class SqlProductsRepo implements IProductsRepo{
                     if(error){
                         rejects( new QueryError(error.message))
                     }
-                    console.log('resolved promise')
+                    
                     resolve(result as ResultSetHeader)
                 })
             })
-            console.log(typeof result.affectedRows)
-
-            if(result.affectedRows > 0) return 'successful_update'
-            return 'update_failed'
+            const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+            if(!areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'no records were matched to update'
+                 }
+            else {
+                this.responseObject.data = null
+                this.responseObject.message = 'success'
+            }
+            return this.responseObject
             
        
 
     }
-    async reduceQuantity(qty: number, productId: number): Promise<string> {
+    async reduceQuantity(qty: number, productId: number): Promise<ResponseObject> {
         const reduceQuery = 'UPDATE products SET qty = qty - ? WHERE product_id = ?';
         const values = [qty, productId]
         
@@ -110,13 +136,23 @@ export class SqlProductsRepo implements IProductsRepo{
                     resolve(result as ResultSetHeader)
                 })
             })
+            const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+            if(!areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'no records were matched to update'
+                 }
+            else {
+                this.responseObject.data = null
+                this.responseObject.message = 'success'
+            }
+            return this.responseObject
+            
            
 
-            if(result.affectedRows > 0) return 'successful_update'
-            return 'update_failed'
+            
             
     }
-    async editPrice(productId: number, newPrice : number): Promise<string> {
+    async editPrice(productId: number, newPrice : number): Promise<ResponseObject> {
 
         const reduceQuery = 'UPDATE productss SET price = ? WHERE product_id = ?';
         const values = [newPrice, productId]
@@ -130,12 +166,22 @@ export class SqlProductsRepo implements IProductsRepo{
                     resolve(result as ResultSetHeader)
                 })
             })
+            const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+            if(!areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'no records were matched to update'
+                 }
+            else{
+                this.responseObject.data = null
+                this.responseObject.message = 'success'
+            }
+            return this.responseObject
+            
             
 
-            if(result.affectedRows > 0) return 'successful_update'
-            return 'update_failed'
+            
     }
-    async editDescription(productId: number, newDescript: string): Promise<string> {
+    async editDescription(productId: number, newDescript: string): Promise<ResponseObject> {
 
         const reduceQuery = 'UPDATE products SET product_description = ? WHERE product_id = ?';
         const values = [newDescript, productId]
@@ -149,12 +195,22 @@ export class SqlProductsRepo implements IProductsRepo{
                     resolve(result as ResultSetHeader)
                 })
             })
+            const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+            if(!areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'no records were matched to update'
+                 }
+            else if(areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'success'
+            }
+            return this.responseObject
+            
             
 
-            if(result.affectedRows > 0) return 'successful_update'
-            return 'update_failed'
+          
     }
-    async addImage(productId: number, imageName: string): Promise<insertedId> {
+    async addImage(productId: number, imageName: string): Promise<ResponseObject> {
 
         const query = 'INSERT INTO products_images (product_id,image_name) VALUES (?, ?)'
         const values = [productId, imageName]
@@ -166,9 +222,9 @@ export class SqlProductsRepo implements IProductsRepo{
                     reject(new QueryError(error.message))
                     
                 }
-                else if(result){
-                    console.log(result)
-                    resolve(result.insertId)
+                if(this.checkQryResult.isThereInsertId(result)){
+                    this.responseObject.data = result.insertId
+                    this.responseObject.message = 'success'
                 }
             })
         })
@@ -178,7 +234,8 @@ export class SqlProductsRepo implements IProductsRepo{
     async deleteImage(imageId: number): Promise<string> {
         return await 'to be built'
     }
-    async removeMainImgStatus(oldMainImageId: number): Promise<string>{
+    async removeMainImgStatus(oldMainImageId: number): Promise<ResponseObject>{
+
         const query: string = `UPDATE products_images SET isMain = FALSE
                                 WHERE image_id = ? `
         const values = [oldMainImageId]
@@ -194,19 +251,27 @@ export class SqlProductsRepo implements IProductsRepo{
                     })
                                 
                     
-        if(result.affectedRows > 0) return 'success_removing_main_status'
-        return 'failed_to_remove_main_status'
+        const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+            if(!areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'no records were matched to update'
+            }
+            else if(areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'success'
+            }
+            return this.responseObject
         
         
     }
 
-    async selectMainImage(newMainImageId: number, oldMainImageId:number | null): Promise<string> {
+    async selectMainImage(newMainImageId: number, oldMainImageId:number | null): Promise<ResponseObject> {
        
         if(typeof oldMainImageId === 'number' ){
             
-            const removeStatusResult: string = await this.removeMainImgStatus(oldMainImageId)
+            const removeStatusResult: ResponseObject = await this.removeMainImgStatus(oldMainImageId)
             
-            if(removeStatusResult ===  'failed_to_remove_main_status'){
+            if(removeStatusResult.message ===  'no records were matched to update'){
                 return removeStatusResult
             }    
         }
@@ -225,11 +290,19 @@ export class SqlProductsRepo implements IProductsRepo{
                     })
         
        
-        if(result.affectedRows > 0) return 'success_updating_main_image'
-        return 'failed_updating_main_image'
+        const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+            if(!areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'no records were matched to update'
+            }
+            else if(areAffectedRows){
+                this.responseObject.data = null
+                this.responseObject.message = 'success'
+            }
+            return this.responseObject
         
     }
-    async deleteImages(productId:number):Promise<string>{
+    async deleteImages(productId:number):Promise<ResponseObject>{
 
         const query = 'DELETE FROM products_images WHERE product_id = ?'
         const values = [productId]
@@ -241,15 +314,23 @@ export class SqlProductsRepo implements IProductsRepo{
                 resolve(result as ResultSetHeader)
             })
         })
-        if(result.affectedRows > 0)  console.log('success_deleting_associated_images')
-        if(result.affectedRows == 0) console.log('no images matched')
+        const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+        if(!areAffectedRows){
+            this.responseObject.data = null
+            this.responseObject.message = 'no records were matched to update'
+        }
+        else if(areAffectedRows){
+            this.responseObject.data = null
+            this.responseObject.message = 'success'
+        }
+        return this.responseObject
             
-        return 'no_record_matched'
+        
         
     }
-    async deleteProduct(productId: number): Promise<string> {
+    async deleteProduct(productId: number): Promise<ResponseObject> {
         this.deleteImages(productId)
-        return await 'pass'
+        return await this.responseObject
     }
     
    
