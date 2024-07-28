@@ -12,6 +12,8 @@ export interface IProductsRepo{
    editDescription(productId : number, newDescript : string): Promise<ResponseObject>
    addImage(productId : number, imageName : string) : Promise<ResponseObject>
    deleteImage(imageId: number):Promise<string>
+   deleteImages(productId: number): Promise<ResponseObject>
+   getAssociatedImages(producId:number):Promise<ResponseObject>
    selectMainImage(newMainImgId : number, oldMainImgId:number|null) : Promise<ResponseObject>
    deleteProduct(producId: number): Promise<ResponseObject>
 

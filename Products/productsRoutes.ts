@@ -14,4 +14,4 @@ productsRouter.put('/edit-descript',validateMldw.editDescript.bind(validateMldw)
 
 productsRouter.post('/add-image',upload.single('file'), productsController.addImage.bind(productsController))
 productsRouter.put('/set-main-image',productsController.setMainImage.bind(productsController))
-productsRouter.delete('/delete-product',productsController.deleteProduct.bind(productsController))
+productsRouter.delete('/product',productsController.deleteProduct.bind(productsController))

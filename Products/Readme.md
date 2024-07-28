@@ -16,5 +16,9 @@ Example of how to send a request to add quantity
   "qty" : 5,
   "productId" : 3
 }
-
+Example of request object for deleting a product with associated images
+ {
+  "images" : ['imageOne', 'imageTwo'],
+  "productId" : 3
+ }
 

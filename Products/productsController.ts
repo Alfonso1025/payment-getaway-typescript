@@ -7,6 +7,7 @@ import { ImgServiceConnectionErr } from "./imageService/errors";
 import { ResponseObject } from "../queryResponse/types";
 import { IResolver } from "../services/resolver/IResolver";
 
+
 export class ProductsController{
     constructor(
         private productsRepo : IProductsRepo,
@@ -250,9 +251,53 @@ export class ProductsController{
         
     }
     async deleteProduct(req: Request, res: Response){
-        const images = ['elon.png', 'popo.png']
-        //const result = await this.imageService.deleteImages(images)
-         this.productsRepo.deleteProduct(2)
+        this.resolver.setResponse(res)
+        
+        const productId = req.body.productId
+        try {
+            //obtain associated images from db
+            const images = await this.productsRepo.getAssociatedImages(productId)
+            console.log(images)
+            //if there are images
+            if(images.message === 'success'){
+                const imageNames: string[] = images.data.map((item: { image_name: string }) => item.image_name);
+                //delete the images from the cloud
+
+                const deleteFromCloud = await this.imageService.deleteImages(imageNames)
+                if(deleteFromCloud === 'images_deleted_successfully'){
+                    //delete associated images from the database
+                    this.productsRepo.deleteImages(productId)
+
+                }
+                //if the cloud delete operation goes wrong
+                else if(deleteFromCloud === 'failed_deleting_images'){
+                    return this.resolver.internalServerError(null,deleteFromCloud)
+                }
+                
+            }
+            
+            //delete the product
+            const deleteProduct = await this.productsRepo.deleteProduct(productId)
+            console.log('delete products', deleteProduct)
+            //send response
+            this.sendResponse(deleteProduct)
+                
+                
+        } catch (error) {
+            if(error instanceof ImgServiceConnectionErr){
+                console.log('error connecting to the cloud services', error.message)
+                return this.resolver.internalServerError(null,error.message)
+            }
+            if(error instanceof DbConnectionError){
+                console.log('a db error ocurred', error.message)
+                return res.status(500).send('internal server error')
+            }
+            if(error instanceof QueryError){
+                console.log('a query sintax error ocurred', error.message)
+                return this.resolver.internalServerError(null, error.message)
+            }
+        }
+        
        
     }
      

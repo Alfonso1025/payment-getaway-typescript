@@ -17,7 +17,7 @@ export class SqlProductsRepo implements IProductsRepo{
     ){}
 
     getAll(): Promise < ResponseObject > {
-        const testquery = 'select * from products where product_id = 50'
+        
         const query = 
             `SELECT 
                 p.product_id,
@@ -45,7 +45,7 @@ export class SqlProductsRepo implements IProductsRepo{
         ;
 
         return new Promise((resolve, reject)=>{
-            db.query(testquery, (error, result)=>{
+            db.query(query, (error, result)=>{
                 if(error){
                     reject(new QueryError(error.message))
                 }
@@ -302,6 +302,31 @@ export class SqlProductsRepo implements IProductsRepo{
             return this.responseObject
         
     }
+    getAssociatedImages(producId: number): Promise<ResponseObject> {
+        const query = 'SELECT image_name FROM products_images WHERE product_id = ?'
+        const values = [producId]
+
+         return new Promise((resolve, reject)=>{
+            db.query(query,values, (error, result)=>{
+                if(error){
+                    reject(new QueryError(error.message))
+                }
+                
+                const isThereData = this.checkQryResult.isThereData(result)
+                if(!isThereData){
+                    this.responseObject.data = null
+                    this.responseObject.message = 'No images were found'
+                }
+                else if(isThereData){
+                    this.responseObject.data = result
+                    this.responseObject.message = 'success'
+                }
+                
+                
+                resolve(this.responseObject)
+            })
+        })
+    }
     async deleteImages(productId:number):Promise<ResponseObject>{
 
         const query = 'DELETE FROM products_images WHERE product_id = ?'
@@ -329,8 +354,27 @@ export class SqlProductsRepo implements IProductsRepo{
         
     }
     async deleteProduct(productId: number): Promise<ResponseObject> {
-        this.deleteImages(productId)
-        return await this.responseObject
+       const query = 'delete from products where product_id = ?'
+       const values = [productId]
+        const result = await new Promise<ResultSetHeader>((resolve , reject)=>{
+            db.query(query,values, (error, result)=>{
+                if(error){
+                    reject( new QueryError(error.message))
+                }
+                resolve(result as ResultSetHeader)
+            })
+        })
+        const areAffectedRows = this.checkQryResult.areThereAffectedRows(result)
+        if(!areAffectedRows){
+            this.responseObject.data = null
+            this.responseObject.message = 'no records were matched to update'
+        }
+        else if(areAffectedRows){
+            this.responseObject.data = null
+            this.responseObject.message = 'success'
+        }
+        return this.responseObject
+
     }
     
    
