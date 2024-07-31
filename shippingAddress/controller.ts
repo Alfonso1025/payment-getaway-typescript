@@ -4,7 +4,7 @@ import { ShippingAddress } from "./types";
 import { DbConnectionError, QueryError } from "../dbconnections/errors";
 import { IResolver } from "../services/resolver/IResolver";
 import { QueryResult } from "mysql2";
-import { ResponseObject } from "../queryResponse/types";
+import { ResponseObject } from "../services/queryResponse/types";
 
 export class Controller{
 

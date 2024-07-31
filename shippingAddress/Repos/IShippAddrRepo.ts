@@ -1,4 +1,4 @@
-import { ResponseObject } from "../../queryResponse/types";
+import { ResponseObject } from "../../services/queryResponse/types";
 import { ShippingAddress } from "../types";
 
 export interface IShippAddrRepo{

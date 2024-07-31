@@ -4,7 +4,7 @@ import {ResultSetHeader } from 'mysql2';
 import { QueryError } from "../../dbconnections/errors";
 import db from "../../dbconnections/sql/sql";
 import { shippAddrRouter } from "../routes";
-import { ResponseObject } from "../../queryResponse/types";
+import { ResponseObject } from "../../services/queryResponse/types";
 export class SqlRepo implements IShippAddrRepo{
 
     private responseObject: ResponseObject

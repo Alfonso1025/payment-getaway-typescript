@@ -4,7 +4,7 @@ import { Product, ProductImage } from "./types";
 import { DbConnectionError, QueryError } from "../dbconnections/errors";
 import { IImageService } from "./imageService/IImageService";
 import { ImgServiceConnectionErr } from "./imageService/errors";
-import { ResponseObject } from "../queryResponse/types";
+import { ResponseObject } from "../services/queryResponse/types";
 import { IResolver } from "../services/resolver/IResolver";
 
 
@@ -72,6 +72,7 @@ export class ProductsController{
         this.resolver.setResponse(res)
         try {
             const result: ResponseObject = await this.productsRepo.getAll()
+            
             const products = result.data 
             
             if(products === null){
@@ -105,7 +106,7 @@ export class ProductsController{
         this.resolver.setResponse(res)
         
         try {
-            const result:ResponseObject = await this.productsRepo.post(product)
+            const result:ResponseObject = await this.productsRepo.addProduct(product)
             this.sendResponse(result)
             
            
@@ -257,7 +258,7 @@ export class ProductsController{
         try {
             //obtain associated images from db
             const images = await this.productsRepo.getAssociatedImages(productId)
-            console.log(images)
+        
             //if there are images
             if(images.message === 'success'){
                 const imageNames: string[] = images.data.map((item: { image_name: string }) => item.image_name);
@@ -281,7 +282,7 @@ export class ProductsController{
             console.log('delete products', deleteProduct)
             //send response
             this.sendResponse(deleteProduct)
-                
+                 
                 
         } catch (error) {
             if(error instanceof ImgServiceConnectionErr){

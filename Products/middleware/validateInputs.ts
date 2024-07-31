@@ -37,4 +37,13 @@ export class ValidateInputs implements IValidateInputs{
         if(typeof sku !== 'string' || !this.isDefined(sku)) return 'the sku must be a string'
         return 'all_inputs_are_valid'
     }
+    setMainImage(newMainImageId: number, oldMainImageId: number | null): string {
+        if(typeof newMainImageId !== 'number' || !this.isDefined(newMainImageId)) return ' the new image id must be a number'
+        if(typeof oldMainImageId !== 'number' || !this.isDefined(oldMainImageId)) return 'the old image id must be a number'
+        return 'all_inputs_are_valid'
+    }
+    deleteProduct(productId: string):string{
+         if(typeof productId !== 'number' || !this.isDefined(productId)) return 'the product id must be a number'
+         return 'all_inputs_are_valid'
+    }
 }

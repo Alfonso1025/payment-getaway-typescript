@@ -1,11 +1,11 @@
 import { Product,insertedId } from "./types"
-import { ResponseObject } from "../queryResponse/types"
+import { ResponseObject } from "../services/queryResponse/types"
 
 
 export interface IProductsRepo{
 
    getAll():  Promise<ResponseObject>
-   post(product:Product): Promise<ResponseObject>
+   addProduct(product:Product): Promise<ResponseObject>
    addQuantity(qty:number,productId:number):Promise<ResponseObject>
    reduceQuantity(qty:number, producId: number) :Promise<ResponseObject>
    editPrice(productId:number, newPrice: number): Promise<ResponseObject>

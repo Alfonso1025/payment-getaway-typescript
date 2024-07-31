@@ -1,4 +1,4 @@
-import { Product, imageKey } from "../types";
+import { Product} from "../types";
 
 export interface IValidateInputs{
 
@@ -6,5 +6,7 @@ export interface IValidateInputs{
     updateQuantity(qty : number, productId : number) : string
     editPrice(producId:number, newPrice : number) : string
     editDescript(producId: number, newDescript: string) : string
-    addImage(producId: number, url:imageKey) : string
+    addImage(producId: number, url:string) : string
+    setMainImage(newMainImageId: number, oldMainImageId: number | null):string
+    deleteProduct(productId:string):string
 }
