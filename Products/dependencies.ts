@@ -1,5 +1,5 @@
 import { S3 } from "./imageService/s3"
-import { ProductsController } from "./productsController"
+import { Controller } from "./controller"
 import { SqlProductsRepo } from "./sqlRepo"
 import { ResponseObject } from "../services/queryResponse/types"
 import { Resolver } from "../services/resolver/resolver"
@@ -18,5 +18,5 @@ const dbQuery = new DbQuerySql(responseObject, checkQueryResult)
 const sqlProductsRepo = new SqlProductsRepo(dbQuery)
 const s3 = new S3
 const resolver = new Resolver
-export const productsController = new ProductsController(sqlProductsRepo, s3, resolver)
+export const controller = new Controller(sqlProductsRepo, s3, resolver)
 

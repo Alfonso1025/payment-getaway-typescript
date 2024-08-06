@@ -8,7 +8,7 @@ import { ResponseObject } from "../services/queryResponse/types";
 import { IResolver } from "../services/resolver/IResolver";
 
 
-export class ProductsController{
+export class Controller{
     constructor(
         private productsRepo : IProductsRepo,
         private imageService : IImageService,
@@ -73,14 +73,14 @@ export class ProductsController{
         try {
             const result: ResponseObject = await this.productsRepo.getAll()
             
-            const products = result.data 
             
-            if(products === null){
+            if(result.message === 'no records found'){
                 console.log('products is null')
                 this.sendResponse(result)
                 return
             }
-
+            const products = result.data 
+            
             const productsWithImages = await this.retrieveImages(products)
             result.data = productsWithImages
             
@@ -93,9 +93,9 @@ export class ProductsController{
                 console.log('a db connection error ocurred: ', error.message)
             }
             else if(error instanceof QueryError){
-                console.log('error excuting the db query: '), error.message
+                console.log('error excuting the db query: ', error.message)
             }
-            this.resolver.internalServerError(error, 'internal server error')
+            this.resolver.internalServerError(null, 'internal server error')
             
         }
        
@@ -135,7 +135,7 @@ export class ProductsController{
         } catch (error) {
             if(error instanceof DbConnectionError){
                 console.log('a dbconnection error occurred', error.message)
-                return res.status(500).send('internal server error')
+                return this.resolver.internalServerError(null, error.message)
             }
             if(error instanceof QueryError){
                 console.log('a query sintax error ocurred', error.message)
@@ -206,20 +206,22 @@ export class ProductsController{
 
     }
     async addImage(req : Request, res: Response){
+
         const file = req.file
-        console.log(file)
+        const productId: number = req.body.productId
+       
+        
         if (!file?.path) {
             return res.status(400).send('File not provided or path is undefined');
         }
         
-        const prodId: number = 2
         const imgName : string = file.originalname
         try {
           
             const result = await this.imageService.uploadImage(file.path, imgName)
             
             if(result === 'image_uploaded_succesfuly'){
-                const resultQuery: ResponseObject = await this.productsRepo.addImage(prodId, imgName)
+                const resultQuery: ResponseObject = await this.productsRepo.addImage(productId, imgName)
                 return this.sendResponse(resultQuery)
             }
             this.resolver.internalServerError(null, 'failed_uploading_to_the_cloud')

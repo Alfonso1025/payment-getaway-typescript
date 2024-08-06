@@ -5,7 +5,6 @@ import db from "../dbconnections/sql/sql";
 import { QueryError } from "../dbconnections/errors";
 import {QueryResult, ResultSetHeader } from 'mysql2';
 import { ResponseObject } from "../services/queryResponse/types";
-import { ICheckQryResult } from "../services/CheckQueryResult/ICheckQryResult";
 import { IDbQuery } from "../services/DbQueryService/IDbQuery";
 import { query } from "express";
 

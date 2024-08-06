@@ -4,14 +4,13 @@ import { User } from "../types";
 import { DbConnectionError } from '../../dbconnections/errors';
 import {UserNotFoundError } from './errors';
 import { IPasswordEncryption } from '../utils/passwordEncryption/IPasswEncrypt';
-import { Jwt } from 'jsonwebtoken';
-import { IJwtGenerator } from '../utils/token/IToken';
+import { IJwtService } from '../../services/token/IJwt';
 
 export  class SignInController{
     constructor(
         private signInRepo: ISignInRepo,
         private passwordEncryptor : IPasswordEncryption,
-        private jwtGenerator : IJwtGenerator
+        private jwtGenerator : IJwtService
     ) {}
 
    

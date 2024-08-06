@@ -28,7 +28,7 @@ export class Controller{
         const personId: number = req.body.personId
 
         try {
-            const result = await this.shippAddrRepo.post(shippingAddress,personId)
+            const result = await this.shippAddrRepo.insertShoppingAddress(shippingAddress,personId)
             this.query(res, result)
         } catch (error) {
 

@@ -11,7 +11,7 @@ export class SqlRepo implements IShippAddrRepo{
     constructor(responseObject : ResponseObject){
         this.responseObject = responseObject
     }
-    async post(shippingAddress: ShippingAddress,personId:number): Promise<ResponseObject> {
+    async insertShoppingAddress(shippingAddress: ShippingAddress,personId:number): Promise<ResponseObject> {
       
       const {street, city, state, zipcode, unit} = shippingAddress
       
@@ -31,14 +31,17 @@ export class SqlRepo implements IShippAddrRepo{
     })
       
     }
-    async get(personId: string): Promise<string> {
-          return await 'pass'
+    async getUserShoppingAdresses(personId: number): Promise<ResponseObject> {
+          return await this.responseObject
         
+    }
+    async getShoppingAddressById(ShopAddId: number): Promise<ResponseObject> {
+        return await this.responseObject
     }
     async edit(field: string, value: any): Promise<string> {
           return await 'pass'
     }
-    async delete(shippAddrId: number): Promise<string> {
-          return await 'pass'
+    async delete(shippAddrId: number): Promise<ResponseObject> {
+          return await this.responseObject
     }
 }

@@ -1,6 +1,7 @@
 import { VerifyTokenController } from "./verifyToken";
-import { JWT } from "../utils/token/jwt";
+import { Resolver } from "../../services/resolver/resolver";
 
-const jwtGenerator = new JWT()
-export const verifyTokenController = new VerifyTokenController(jwtGenerator)
+
+const resolver = new Resolver
+export const verifyTokenController = new VerifyTokenController(resolver)
 
