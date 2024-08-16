@@ -53,5 +53,10 @@ export class ValidateMdlw{
         const result = this.validateInputs.setMainImage(newMainImageId, oldMainImageId)
         this.verifyResult(result, next)
     }
+    delete(req:Request, res:Response, next:NextFunction){
+        const productId = req.body.productId
+        
+
+    }
     
 }
