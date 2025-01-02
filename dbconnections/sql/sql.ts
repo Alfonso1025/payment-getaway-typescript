@@ -1,5 +1,5 @@
 import mysql from 'mysql2';
-import { DbConnectionError } from '../errors';
+
 
 
 function connectToMysql(){

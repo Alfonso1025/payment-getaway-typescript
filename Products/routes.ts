@@ -213,7 +213,9 @@ productsRouter.post("/",authorize, validateMldw.addProduct.bind(validateMldw),co
  */
 
 
-productsRouter.put('/add-qty',authorize,validateMldw.updateQuantity.bind(validateMldw),controller.addQuantity.bind(controller))
+productsRouter.put('/add-qty',controller.addQuantity.bind(controller))
+
+
 /**
  * @swagger
  * /products/add-qty:

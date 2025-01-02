@@ -1,11 +1,12 @@
 import { ResponseObject } from "../../services/queryResponse/types";
 import { ShippingAddress } from "../types";
+import { CreateAddressDto } from "../dtos/createAddress.dto";
 
 export interface IShippAddrRepo{
     
-    insertShoppingAddress(ShippingAddress: ShippingAddress,personId:number): Promise<ResponseObject>
-    getUserShoppingAdresses(personId : number) : Promise<ResponseObject>
-    getShoppingAddressById(ShopAddId: number):Promise<ResponseObject>
+    addShippingAddress(createAddressDto : CreateAddressDto): Promise<ResponseObject>
+    getUserShippingAdresses(personId : number) : Promise<ResponseObject>
+    getShippingAddressById(ShopAddId: number):Promise<ResponseObject>
     delete(shippAddrId : number):Promise<ResponseObject>
 
     

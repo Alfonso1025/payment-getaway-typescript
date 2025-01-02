@@ -4,5 +4,6 @@ export type ShippingAddress = {
     city : string
     state : string
     zipcode : number
+    country : string
     unit? : number
 }

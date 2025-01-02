@@ -5,43 +5,36 @@ import { QueryError } from "../../dbconnections/errors";
 import db from "../../dbconnections/sql/sql";
 import { shippAddrRouter } from "../routes";
 import { ResponseObject } from "../../services/queryResponse/types";
+import { IDbQuery } from "../../services/DbQueryService/IDbQuery";
+import { CreateAddressDto } from "../dtos/createAddress.dto";
 export class SqlRepo implements IShippAddrRepo{
 
-    private responseObject: ResponseObject
-    constructor(responseObject : ResponseObject){
-        this.responseObject = responseObject
-    }
-    async insertShoppingAddress(shippingAddress: ShippingAddress,personId:number): Promise<ResponseObject> {
+    constructor(
+        
+        private dbQuery : IDbQuery
+    
+    ){}
+    async addShippingAddress(createAddressDto: CreateAddressDto): Promise<ResponseObject> {
       
-      const {street, city, state, zipcode, unit} = shippingAddress
+      const {street, city, state, zipcode, unit, personId} = createAddressDto
       
       const query = 'INSERT INTO shipping_addresses (street, city, state,zipcode,unit,person_id) VALUES (?,?,?,?,?,?) ';
-      const values = [street, city,state,zipcode,unit,personId]
-      return new Promise((resolve, reject)=>{
-        db.query(query,values, (error, result: ResultSetHeader)=>{
-            if(error){
-            
-                reject(new QueryError(error.message))
-                
-            }
-            else if(result.insertId){
-                resolve(this.responseObject)
-            }
-        })
-    })
+      return await this.dbQuery.post(query, [street,city,state,zipcode,unit,personId])
+    
       
     }
-    async getUserShoppingAdresses(personId: number): Promise<ResponseObject> {
-          return await this.responseObject
+    async getUserShippingAdresses(personId: number): Promise<ResponseObject> {
+          const query = 'SELECT * FROM shipping_addresses WHERE person_id = ?'
+          return await this.dbQuery.get(query,[personId])
         
     }
-    async getShoppingAddressById(ShopAddId: number): Promise<ResponseObject> {
-        return await this.responseObject
+    async getShippingAddressById(ShopAddId: number): Promise<ResponseObject> {
+        return await this.dbQuery.get('',null)
     }
     async edit(field: string, value: any): Promise<string> {
           return await 'pass'
     }
     async delete(shippAddrId: number): Promise<ResponseObject> {
-          return await this.responseObject
+          return await this.dbQuery.delete('',[])
     }
 }

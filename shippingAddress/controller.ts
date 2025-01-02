@@ -5,6 +5,7 @@ import { DbConnectionError, QueryError } from "../dbconnections/errors";
 import { IResolver } from "../services/resolver/IResolver";
 import { QueryResult } from "mysql2";
 import { ResponseObject } from "../services/queryResponse/types";
+import { CreateAddressDto } from "./dtos/createAddress.dto";
 
 export class Controller{
 
@@ -15,37 +16,54 @@ export class Controller{
         this.shippAddrRepo = shippAddrRepo;
         this.resolver = resolver
     }
-    async query(res:Response, result: ResponseObject){
-        console.log('code got to general')
-        if(result.message === 'success') return this.resolver.success(null, result.message)
+    async sendResponse( result: ResponseObject){
+        
+        if(result.message === 'success') return this.resolver.success(result.data, result.message)
         else return this.resolver.notFound(null, result.message)
     }
+
     //post a new shipping address
     async post(req: Request, res: Response){
         
         this.resolver.setResponse(res)
-        const shippingAddress: ShippingAddress = req.body.shippingAddress
-        const personId: number = req.body.personId
+        const createAddressDto: CreateAddressDto = req.body
+        
 
         try {
-            const result = await this.shippAddrRepo.insertShoppingAddress(shippingAddress,personId)
-            this.query(res, result)
+            const result: ResponseObject = await this.shippAddrRepo.addShippingAddress(createAddressDto)
+            console.log('this is the result: ',result)
+            this.sendResponse(result)
         } catch (error) {
-
             if(error instanceof DbConnectionError){
-                console.log('a db connection error ocurred', error.message)
-                this.resolver.internalServerError(error, error.message)
+                console.log('a db connection error ocurred: ', error.message)
             }
-            if(error instanceof QueryError){
-                console.log('there was an error in the query')
-                this.resolver.internalServerError(error,error.message)
+            else if(error instanceof QueryError){
+                console.log('error excuting the db query: ', error.message)
             }
+
+            this.resolver.internalServerError(null, 'internal server error')
         }
         
         
     }
-    async getAll(personId: number){
+    async getUserShippingAddresses( req:Request, res: Response){
+        this.resolver.setResponse(res)
+        
+        console.log('req.params : ',req.params)// undefined
+        const personId:number =  parseInt(req.params.personId, 10)
+        try {
+            const result : ResponseObject = await this.shippAddrRepo.getUserShippingAdresses(personId)
+            this.sendResponse(result)
+        } catch (error) {
+            if(error instanceof DbConnectionError){
+                console.log('a db connection error ocurred: ', error.message)
+            }
+            else if(error instanceof QueryError){
+                console.log('error excuting the db query: ', error.message)
+            }
 
+            this.resolver.internalServerError(null, 'internal server error')
+        }
     }
 
 }

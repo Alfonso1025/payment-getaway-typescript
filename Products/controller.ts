@@ -9,6 +9,7 @@ import { IResolver } from "../services/resolver/IResolver";
 
 
 export class Controller{
+
     constructor(
         private productsRepo : IProductsRepo,
         private imageService : IImageService,
@@ -20,6 +21,7 @@ export class Controller{
         if(result.message === 'success') return this.resolver.success(result.data, result.message)
         else return this.resolver.notFound(null, result.message)
     }
+    
     /*  
         retrieveImages is a helper method used by getAllProducts() to fetch all images
         associated to a product from the cloud. The method returns a promise that
@@ -68,8 +70,9 @@ export class Controller{
     }
     
     async getAllProducts(req:Request, res: Response){
-
+        //set the response object in the resolver
         this.resolver.setResponse(res)
+
         try {
             const result: ResponseObject = await this.productsRepo.getAll()
             
@@ -102,8 +105,10 @@ export class Controller{
     }
     async addProduct(req:Request, res: Response){
 
-        const product : Product = req.body
+       
+        //set response object in the resolver
         this.resolver.setResponse(res)
+        const product : Product = req.body
         
         try {
             const result:ResponseObject = await this.productsRepo.addProduct(product)
